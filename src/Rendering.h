@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <time.h>
+#include "Utils.h"
 
 using namespace glm;
 
@@ -33,9 +34,12 @@ extern unsigned int vertexShader;
 extern unsigned int fragmentShader;
 extern unsigned int shaderProgram;
 
-//Animation/transformation stuff
 extern clock_t old;
-extern float rotation;
+
+extern glm::vec3 vertices[];
+extern glm::vec3 normals[];
+extern glm::vec3 colors[];
+extern unsigned short indices[];
 
 //helper function to read shader source and put it in a char array
 //thanks to Swiftless
@@ -46,6 +50,8 @@ void printLinkInfoLog(int);
 void printShaderInfoLog(int);
 
 //standard glut-based program functions
-void init(void);
+void initOpenGL(int argc, char** argv, int width, int height);
+void initShaders(void);
+void initVBOs(void);
 void resize(int, int);
 void cleanup(void);

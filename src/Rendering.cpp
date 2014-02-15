@@ -20,83 +20,88 @@ unsigned int vertexShader;
 unsigned int fragmentShader;
 unsigned int shaderProgram;
 
+
+//Vertex buffers. Hard initialized for now
+
+//4 vertex positions
+glm::vec3 vertices[4] = {
+		vec3(-0.5,-0.5, 0.0),
+		vec3( 0.5,-0.5, 0.0),
+		vec3(-0.5, 0.5, 0.0),
+		vec3( 0.5, 0.5, 0.0)};
+
+//4 normals (one per vertex)
+glm::vec3 normals[4] = {
+		vec3(0.0, 0.0, 1.0), 
+		vec3(0.0, 0.0, 1.0),
+		vec3(0.0, 0.0, 1.0),
+		vec3(0.0, 0.0, 1.0)};
+
+//4 Colors (one per vertex)
+glm::vec3 colors[4] = {
+		 vec3(1.0, 0.0, 0.0), 
+		 vec3(0.0, 1.0, 0.0),
+		 vec3(0.0, 0.0, 1.0),
+		 vec3(1.0, 1.0, 1.0)};
+
+//6 indecies (2 triangles)
+unsigned short indices[6] = {0, 1, 2,  2, 1, 3};
+
+
 //Animation/transformation stuff
 clock_t old;
 float rotation = 0.0f;
 
+void initOpenGL(int argc, char** argv, int width, int height)
+{
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+	glutInitWindowSize(width, height);
+	glutCreateWindow("Sandbox");
 
-void init() {
-	//Create the VBOs and IBO we'll be using to render images in OpenGL
-	glGenBuffers(1, &vbo);
-	glGenBuffers(1, &cbo);
-	glGenBuffers(1, &nbo);
-	glGenBuffers(1, &ibo);
-	
-	//Everybody does this
+	glewInit();
+
+	//Setup clear color, enable depth test, and other setup stuff
 	glClearColor(0, 0, 0, 1);
 	glEnable(GL_DEPTH_TEST);
 	glClearDepth(1.0);
 	glDepthFunc(GL_LEQUAL);
 
-	//here is stuff for setting up our shaders
+}
+
+void initVBOs(void)
+{
+	//Create the VBOs and IBO we'll be using to render images in OpenGL
+	glGenBuffers(1, &vbo);
+	glGenBuffers(1, &cbo);
+	glGenBuffers(1, &nbo);
+	glGenBuffers(1, &ibo);
+
+	
+}
+
+void initShaders() {
+	
 	const char* fragFile = "diffuseFrag.frag";
 	const char* vertFile = "diffuseVert.vert";
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	Utility::shaders_t shaders = Utility::loadShaders(vertFile, fragFile);
+
 	shaderProgram = glCreateProgram();
 	
-	//load up the source, compile and link the shader program
-	const char* vertSource = textFileRead(vertFile);
-	const char* fragSource = textFileRead(fragFile);
-	glShaderSource(vertexShader, 1, &vertSource, 0);
-	glShaderSource(fragmentShader, 1, &fragSource, 0);
-	glCompileShader(vertexShader);
-	glCompileShader(fragmentShader);
-
-	//For your convenience, i decided to throw in some compiler/linker output helper functions
-	//from CIS 565
-	GLint compiled;
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &compiled);
-	if (!compiled)
-	{
-		printShaderInfoLog(vertexShader);
-	} 
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &compiled);
-	if (!compiled)
-	{
-		printShaderInfoLog(fragmentShader);
-	} 
-
 	//set the attribute locations for our shaders
 	glBindAttribLocation(shaderProgram, positionLocation, "vs_position");
 	glBindAttribLocation(shaderProgram, normalLocation, "vs_normal");
 	glBindAttribLocation(shaderProgram, colorLocation, "vs_color");
 
-	//finish shader setup
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	//check for linking success
-	GLint linked;
-	glGetProgramiv(shaderProgram,GL_LINK_STATUS, &linked);
-	if (!linked) 
-	{
-		printLinkInfoLog(shaderProgram);
-	}
-
+	Utility::attachAndLinkProgram(shaderProgram,shaders);
+	
 	//Get the uniform locations for our shaders, unfortunately they can not be set by us, we have
 	//to ask OpenGL for them
 	u_lightPosLocation = glGetUniformLocation(shaderProgram, "u_lightPos");
 	u_modelMatrixLocation = glGetUniformLocation(shaderProgram, "u_modelMatrix");
 	u_projMatrixLocation = glGetUniformLocation(shaderProgram, "u_projMatrix");
-
-	//Always remember that it doesn't do much good if you don't have OpenGL actually use the shaders
-	glUseProgram(shaderProgram);
-
-	resize(640, 480);
-	old = clock();
 }
+
 
 void cleanup() {
 	glDeleteBuffers(1, &vbo);

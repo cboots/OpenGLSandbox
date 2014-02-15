@@ -6,23 +6,15 @@ uniform mat4 u_modelMatrix;
 uniform mat4 u_projMatrix;
 uniform vec3 u_lightPos;
 
-in vec4 vs_normal;
-in vec4 vs_position;
+in vec3 vs_normal;
+in vec3 vs_position;
 in vec3 vs_color;
 
 out vec3 fs_normal;
-out vec3 fs_light_vector;
 out vec3 fs_color;
 
 void main() { 
-    // Set the color and normal as just the input from the VBOs,
-	// they only get interesting after they've been interpolated by the rasterizer
     fs_color = vs_color;
-    fs_normal = vec3(normalize(u_modelMatrix*vec4(vs_normal)));
-    
-    // Set up our vector for the light
-    fs_light_vector = normalize(vec3(u_lightPos - (u_modelMatrix * vs_position).xyz));
-
-	//built-in things to pass down the pipeline
-    gl_Position = u_projMatrix * u_modelMatrix * vs_position;
+    fs_normal = vs_normal;
+    gl_Position = vec4(vs_position, 1.0);
 }

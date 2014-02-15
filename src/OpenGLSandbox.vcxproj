@@ -77,39 +77,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Cabinet.cpp" />
-    <ClCompile Include="Chair.cpp" />
-    <ClCompile Include="Cube.cpp" />
-    <ClCompile Include="Cylinder.cpp" />
-    <ClCompile Include="Floor.cpp" />
-    <ClCompile Include="FurnitureFactory.cpp" />
-    <ClCompile Include="GeometryFactory.cpp" />
     <ClCompile Include="glew.c" />
-    <ClCompile Include="Lamp.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Node.cpp" />
     <ClCompile Include="Rendering.cpp" />
-    <ClCompile Include="SceneGraph.cpp" />
-    <ClCompile Include="Sphere.cpp" />
-    <ClCompile Include="Table.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BoundingBox.h" />
-    <ClInclude Include="Cabinet.h" />
-    <ClInclude Include="Chair.h" />
-    <ClInclude Include="Cube.h" />
-    <ClInclude Include="Cylinder.h" />
-    <ClInclude Include="Floor.h" />
-    <ClInclude Include="FurnitureFactory.h" />
-    <ClInclude Include="GeometryFactory.h" />
     <ClInclude Include="glew.h" />
-    <ClInclude Include="Lamp.h" />
-    <ClInclude Include="Node.h" />
     <ClInclude Include="Rendering.h" />
-    <ClInclude Include="SceneGraph.h" />
-    <ClInclude Include="Sphere.h" />
-    <ClInclude Include="Table.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>

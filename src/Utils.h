@@ -1,16 +1,8 @@
 #pragma once
-#include "../glm/glm.hpp"
-#include "../glm/gtc/matrix_transform.hpp"
+
+#include "glew.h"
+#include <cstdlib>
 #include <stdio.h>
-#include <algorithm>
-#include <iostream>
-#include <istream>
-#include <ostream>
-#include <fstream>
-#include <iterator>
-#include <sstream>
-#include <string>
-#include <vector>
 
 using namespace std;
 
@@ -26,9 +18,27 @@ using namespace std;
 #define SIGN(a) ((a > 0)?1:((a < 0)?-1:0))
 
 
-extern bool epsilonCheckEqual(float a, float b, float ep);
-extern std::istream& safeGetline(std::istream& is, std::string& t);
-extern std::vector<std::string> tokenizeString(std::string str); 
 
-// print out matrix by rows
-void printMat(glm::mat4  mat);
+namespace Utility {
+
+	typedef struct {
+		GLuint vertex;
+		GLuint fragment;
+	} shaders_t;
+
+
+
+shaders_t loadShaders(const char * vert_path, const char * frag_path);
+
+void attachAndLinkProgram( GLuint program, shaders_t shaders);
+
+char* loadFile(const char *fname, GLint &fSize);
+
+// printShaderInfoLog
+// From OpenGL Shading Language 3rd Edition, p215-216
+// Display (hopefully) useful error messages if shader fails to compile
+void printShaderInfoLog(GLint shader);
+
+void printLinkInfoLog(GLint prog) ;
+}
+ 

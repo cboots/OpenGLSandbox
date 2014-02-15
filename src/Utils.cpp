@@ -1,69 +1,142 @@
 #include "Utils.h"
 
-// print out matrix in order
-void printMat(glm::mat4  mat){
-	int i,j;
-	printf("{");
-	for (j=0; j<4; j++){
-		for (i=0; i<4; i++){
-			printf("%.1f",mat[i][j]);
-			if(i < 3)
-				printf(",");
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+namespace Utility {
+
+	char* loadFile(const char *fname, GLint &fSize)
+	{
+		ifstream::pos_type size;
+		char * memblock;
+		std::string text;
+
+		// file read based on example in cplusplus.com tutorial
+		ifstream file (fname, ios::in|ios::binary|ios::ate);
+		if (file.is_open())
+		{
+			size = file.tellg();
+			fSize = (GLuint) size;
+			memblock = new char [size];
+			file.seekg (0, ios::beg);
+			file.read (memblock, size);
+			file.close();
+			cout << "file " << fname << " loaded" << endl;
+			text.assign(memblock);
 		}
-		printf(";");
+		else
+		{
+			cout << "Unable to open file " << fname << endl;
+			exit(1);
+		}
+		return memblock;
 	}
-	printf("}");
-}
 
-#include "utils.h"
+	// printShaderInfoLog
+	// From OpenGL Shading Language 3rd Edition, p215-216
+	// Display (hopefully) useful error messages if shader fails to compile
+	void printShaderInfoLog(GLint shader)
+	{
+		int infoLogLen = 0;
+		int charsWritten = 0;
+		GLchar *infoLog;
 
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLen);
 
-bool epsilonCheckEqual(float a, float b, float ep){
-    if(fabs(fabs(a)-fabs(b))<ep){
-        return true;
-    }else{
-        return false;
-    }
-}
+		// should additionally check for OpenGL errors here
 
-//Thanks to http://stackoverflow.com/a/6089413 for the safely handled line reading code
-std::istream& safeGetline(std::istream& is, std::string& t)
-{
-    t.clear();
+		if (infoLogLen > 0)
+		{
+			infoLog = new GLchar[infoLogLen];
+			// error check for fail to allocate memory omitted
+			glGetShaderInfoLog(shader,infoLogLen, &charsWritten, infoLog);
+			cout << "InfoLog:" << endl << infoLog << endl;
+			delete [] infoLog;
+		}
 
-    // The characters in the stream are read one-by-one using a std::streambuf.
-    // That is faster than reading them one-by-one using the std::istream.
-    // Code that uses streambuf this way must be guarded by a sentry object.
-    // The sentry object performs various tasks,
-    // such as thread synchronization and updating the stream state.
+		// should additionally check for OpenGL errors here
+	}
 
-    std::istream::sentry se(is, true);
-    std::streambuf* sb = is.rdbuf();
+	void printLinkInfoLog(GLint prog) 
+	{
+		int infoLogLen = 0;
+		int charsWritten = 0;
+		GLchar *infoLog;
 
-    for(;;) {
-        int c = sb->sbumpc();
-        switch (c) {
-        case '\n':
-            return is;
-        case '\r':
-            if(sb->sgetc() == '\n')
-            sb->sbumpc();
-            return is;
-        case EOF:
-            // Also handle the case when the last line has no line ending
-            if(t.empty())
-            is.setstate(std::ios::eofbit);
-            return is;
-        default:
-            t += (char)c;
-        }
-    }
-}
+		glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &infoLogLen);
 
-std::vector<std::string> tokenizeString(std::string str){
-	std::stringstream strstr(str);
-	std::istream_iterator<std::string> it(strstr);
-	std::istream_iterator<std::string> end;
-	std::vector<std::string> results(it, end);
-	return results;
+		// should additionally check for OpenGL errors here
+
+		if (infoLogLen > 0)
+		{
+			infoLog = new GLchar[infoLogLen];
+			// error check for fail to allocate memory omitted
+			glGetProgramInfoLog(prog,infoLogLen, &charsWritten, infoLog);
+			cout << "InfoLog:" << endl << infoLog << endl;
+			delete [] infoLog;
+		}
+	}
+
+	shaders_t loadShaders(const char * vert_path, const char * frag_path) {
+		GLuint f, v;
+
+		char *vs,*fs;
+
+		v = glCreateShader(GL_VERTEX_SHADER);
+		f = glCreateShader(GL_FRAGMENT_SHADER);	
+
+		// load shaders & get length of each
+		GLint vlen;
+		GLint flen;
+		vs = loadFile(vert_path,vlen);
+		fs = loadFile(frag_path,flen);
+
+		const char * vv = vs;
+		const char * ff = fs;
+
+		glShaderSource(v, 1, &vv,&vlen);
+		glShaderSource(f, 1, &ff,&flen);
+
+		GLint compiled;
+
+		glCompileShader(v);
+		glGetShaderiv(v, GL_COMPILE_STATUS, &compiled);
+		if (!compiled)
+		{
+			cout << "Vertex shader not compiled." << endl;
+			printShaderInfoLog(v);
+		} 
+
+		glCompileShader(f);
+		glGetShaderiv(f, GL_COMPILE_STATUS, &compiled);
+		if (!compiled)
+		{
+			cout << "Fragment shader not compiled." << endl;
+			printShaderInfoLog(f);
+		} 
+		shaders_t out; out.vertex = v; out.fragment = f;
+
+		delete [] vs; // dont forget to free allocated memory
+		delete [] fs; // we allocated this in the loadFile function...
+
+		return out;
+	}
+
+	void attachAndLinkProgram( GLuint program, shaders_t shaders) {
+		glAttachShader(program, shaders.vertex);
+		glAttachShader(program, shaders.fragment);
+
+		glLinkProgram(program);
+		GLint linked;
+		glGetProgramiv(program,GL_LINK_STATUS, &linked);
+		if (!linked) 
+		{
+			cout << "Program did not link." << endl;
+			printLinkInfoLog(program);
+		}
+	}
 }
